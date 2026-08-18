@@ -1,9 +1,15 @@
-# Local Image Layer Separator — V5
+# Local Image Layer Separator — V6
 
-GitHub Pages-ready browser prototype.
+GitHub Pages-ready prototype.
 
-V5 uses a direct, visible native HTML file input for iPhone/Safari compatibility.
+## iPhone/Safari upload
 
-Replace the existing `index.html` in your GitHub repository and commit the change. Keep GitHub Pages on `main` → `/ (root)`.
+V6 deliberately uses one visible native `<input type="file">`. There is no JavaScript-triggered picker and no hidden duplicate picker.
 
-Images are processed in the browser; image pixels are not uploaded to an application server.
+After choosing an image, the status should immediately say `Selected ... — preparing image…`.
+
+## Deploy
+
+Replace `index.html` in the GitHub repository and commit. Keep GitHub Pages set to `main` and `/ (root)`.
+
+Images are processed in the browser; the application does not upload image pixels to an application server.
