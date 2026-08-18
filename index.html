@@ -116,6 +116,16 @@ input[type=range]{width:100%}.tiny{font-size:11px;color:var(--muted)}.note{font-
 <script>
 (function(){
   const input=document.getElementById("file");
+  window.addEventListener("error", function(e){
+    const msg=e?.error?.message || e?.message || "Unknown JavaScript error";
+    const status=document.getElementById("status");
+    if(status) status.textContent="App JavaScript error: "+msg;
+  });
+  window.addEventListener("unhandledrejection", function(e){
+    const msg=e?.reason?.message || String(e?.reason || "Unknown promise error");
+    const status=document.getElementById("status");
+    if(status) status.textContent="App promise error: "+msg;
+  });
   const status=document.getElementById("status");
   const canvas=document.getElementById("canvas");
   const empty=document.getElementById("empty");
@@ -153,7 +163,12 @@ input[type=range]{width:100%}.tiny{font-size:11px;color:var(--muted)}.note{font-
       if(typeof window.startLayerAnalysis==="function"){
         window.startLayerAnalysis(file);
       }else{
-        say("Image loaded successfully. Preparing the AI engine…");
+        say("Image loaded, but the app engine did not initialise. Checking for a JavaScript error…");
+        setTimeout(function(){
+          if(typeof window.startLayerAnalysis!=="function"){
+            say("The app engine failed before initialising. Reload this page once; if it repeats, the status will show the exact error.");
+          }
+        },500);
       }
     };
     img.onerror=function(){ say("The image was selected, but Safari could not decode it."); };
@@ -168,6 +183,7 @@ input[type=range]{width:100%}.tiny{font-size:11px;color:var(--muted)}.note{font-
 </script>
 
 <script>
+try{
 let pipeline, RawImage;
 
 const $ = id => document.getElementById(id);
@@ -420,6 +436,13 @@ $("soft").oninput=e=>{$("softVal").textContent=e.target.value};
 $("expand").oninput=e=>{$("expandVal").textContent=e.target.value};
 $("reanalyze").onclick=analyse;
 $("reset").onclick=()=>{layers={};ocrWords=[];renderLayers();renderExports();ctx.clearRect(0,0,W,H);setStatus("Reset. Choose an image to begin.");$("reset").disabled=true};
+window.__layerAppReady=true;
+}catch(err){
+  window.__layerAppBootError=err;
+  const st=document.getElementById("status");
+  if(st) st.textContent="App startup error: "+(err?.message||err);
+  console.error(err);
+}
 </script>
 </body>
 </html>

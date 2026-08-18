@@ -1,24 +1,7 @@
-# Local Image Layer Separator — V10
+# Local Image Layer Separator — V11
 
-## Why V10 is different
+V11 adds explicit startup diagnostics. The upload bootstrap is dependency-free and catches browser JavaScript errors and rejected promises. The application engine is initialised separately.
 
-The previous full app had a JavaScript startup failure. The native Safari picker still appeared, but the application script could fail before its event handlers were registered. V10 separates the upload bootstrap from the AI application.
+If the application fails before registering its analysis function, the status area now reports the JavaScript startup error instead of silently remaining on “Waiting for image”.
 
-The first script is a tiny classic browser script with no external dependencies. It:
-
-1. Receives the selected file.
-2. Creates a local object URL.
-3. Decodes and previews the image.
-4. Only then starts the AI application.
-
-The AI library is dynamically imported after the image has successfully loaded.
-
-The JavaScript was also syntax-checked before packaging.
-
-## Deploy
-
-Replace `index.html` in the GitHub repository and commit it. Keep GitHub Pages on `main` → `/ (root)`.
-
-## Privacy
-
-Image pixels are processed in the browser and are not sent to an application server.
+Deploy by replacing `index.html` in the GitHub Pages repository and committing the change.
