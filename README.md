@@ -1,25 +1,17 @@
-# Local Image Layer Separator — V7
+# Local Image Layer Separator — V8
 
-GitHub Pages-ready prototype.
+GitHub Pages-ready browser prototype.
 
 ## iPhone / Safari upload
 
-The upload path is based on a minimal Safari diagnostic that was verified to receive and preview a selected image. The app uses one native `<input type="file">` and the same `change`/FileReader-compatible browser flow before handing the file to the layer-separator pipeline.
+V8 adds an explicit **Use selected image** button. After choosing an image with Safari's native file picker, tap that button. The application reads `input.files[0]` directly and starts the existing image-analysis pipeline.
 
-## Features
-
-- Browser-side AI foreground/background segmentation
-- Local OCR
-- Estimated typography, text-background, decoration and background layers
-- Adjustable edge softness
-- 1× / 2× / 4× / custom output resolution
-- Transparent PNG export
-- No application server for image processing
+This provides a reliable fallback if iOS Safari does not fire the `change` event in the deployed page.
 
 ## Deploy
 
-Replace the repository's `index.html` with this file and commit it. Keep GitHub Pages on `main` → `/ (root)`.
+Replace `index.html` in the GitHub repository and commit. Keep GitHub Pages on `main` → `/ (root)`.
 
 ## Privacy
 
-Image pixels are processed in the browser and are not sent to an application server. Libraries and model files are downloaded from their CDNs/model hosting.
+Image pixels are processed in the browser and are not sent to an application server.
