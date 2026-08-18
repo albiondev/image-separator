@@ -113,7 +113,7 @@ input[type=range]{width:100%}.tiny{font-size:11px;color:var(--muted)}.note{font-
 </main>
 
 <script type="module">
-import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0/+esm";
+import { pipeline, RawImage } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0/+esm";
 
 const $ = id => document.getElementById(id);
 const canvas=$("canvas"), ctx=canvas.getContext("2d",{willReadFrequently:true});
@@ -239,16 +239,26 @@ async function analyse(){
   try{
     if(!pipe){
       setStatus("Loading local segmentation model (first run can be large)…");
-      pipe=await pipeline("image-segmentation","onnx-community/BiRefNet_lite-ONNX",{dtype:navigator.gpu?"fp16":"q8"});
+      pipe=await pipeline("image-segmentation","onnx-community/BiRefNet_lite-ONNX",{dtype:"fp32"});
     }
     progress.value=.25;setStatus("Running foreground segmentation locally…");
-    const result=await pipe(sourceImage);
-    let maskImg=result?.[0]?.mask || result?.[0]?.image || result?.[0];
+    const modelInput=RawImage.fromCanvas(canvas);\n    const result=await pipe(modelInput);
+    let maskImg=result?.[0]?.mask || result?.[0]?.image || result?.mask || result;
     if(!maskImg) throw new Error("The segmentation model returned no mask.");
-    const mc=document.createElement("canvas");mc.width=W;mc.height=H;
-    const mctx=mc.getContext("2d",{willReadFrequently:true});mctx.drawImage(maskImg,0,0,W,H);
-    const md=mctx.getImageData(0,0,W,H).data;let fg=new Uint8ClampedArray(W*H);
-    for(let i=0;i<fg.length;i++)fg[i]=md[i*4];
+    let maskRaw;
+    if(maskImg?.data && typeof maskImg.width==="number") {
+      maskRaw=maskImg;
+    } else {
+      maskRaw=await RawImage.read(maskImg);
+    }
+    const maskResized=await maskRaw.resize(W,H);
+    const channels=maskResized.channels || 1;
+    const md=maskResized.data;
+    let fg=new Uint8ClampedArray(W*H);
+    for(let i=0;i<fg.length;i++){
+      const v=md[i*channels] ?? 0;
+      fg[i]=v;
+    }
     fg=blurMask(fg,Number($("soft").value));
     const sd=sourceData();
     progress.value=.55;setStatus("Detecting typography locally…");

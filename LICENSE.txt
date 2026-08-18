@@ -1,1 +1,1 @@
-This repository packages the prototype application. Third-party libraries and models are subject to their own licences. Review all dependency and model licences before redistribution or commercial use.
+Prototype package. Third-party libraries and models retain their own licences. Review all dependency and model licences before redistribution.
