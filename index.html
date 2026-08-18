@@ -12,7 +12,7 @@ header{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-
 h1{font-size:18px;margin:0 0 3px}.sub{color:var(--muted);font-size:12px}.privacy{border:1px solid #31533e;background:#102017;color:#9de0b1;padding:7px 10px;border-radius:999px;font-size:12px}
 main{display:grid;grid-template-columns:300px minmax(400px,1fr) 300px;min-height:calc(100vh - 78px)}
 aside{padding:18px;border-right:1px solid var(--line);background:#10131a}.right{border-left:1px solid var(--line);border-right:0}
-.file-picker{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:9px 12px;border-radius:9px;cursor:pointer}.drop{border:1px dashed #4a5365;border-radius:12px;padding:28px 15px;text-align:center;background:#121721}.drop.drag{border-color:var(--accent);background:#18172a}.drop strong{display:block;margin-bottom:5px}.drop small{color:var(--muted)}
+.ios-file-input{display:block;width:100%;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text)}.file-picker{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:9px 12px;border-radius:9px;cursor:pointer}.drop{border:1px dashed #4a5365;border-radius:12px;padding:28px 15px;text-align:center;background:#121721}.drop.drag{border-color:var(--accent);background:#18172a}.drop strong{display:block;margin-bottom:5px}.drop small{color:var(--muted)}
 .section{margin-top:18px}.section h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 9px}
 .status{padding:10px;border-radius:9px;background:var(--panel);border:1px solid var(--line);color:#cdd3dc;font-size:12px;min-height:42px}
 .layer{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);background:var(--panel);border-radius:9px;margin:7px 0}.layer.active{border-color:var(--accent)}.layer input{accent-color:var(--accent)}.layer .name{flex:1}.badge{font-size:10px;color:var(--muted)}
@@ -40,8 +40,8 @@ input[type=range]{width:100%}.tiny{font-size:11px;color:var(--muted)}.note{font-
   <div id="drop" class="drop">
     <strong>Drop an image here</strong>
     <small>or choose a PNG / JPG / WebP</small>
-    <div style="margin-top:12px"><label class="file-picker" for="file">Choose image</label></div>
-    <input id="file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+    <div style="margin-top:12px"><span class="file-picker">Choose image</span></div>
+    <input id="file" type="file" accept="image/*" class="ios-file-input">
   </div>
 
   <div class="section">
@@ -76,7 +76,7 @@ input[type=range]{width:100%}.tiny{font-size:11px;color:var(--muted)}.note{font-
   <div id="empty" class="empty">
     <h2>Separate a flattened graphic into editable layers</h2>
     <p>Typography, text background, foreground/decorative artwork and the whole-image background are estimated locally.</p>
-    <label class="file-picker" for="file">Start with an image</label>
+    <span class="file-picker">Start with an image</span>
   </div>
   <canvas id="canvas" hidden></canvas>
 </section>
@@ -339,8 +339,11 @@ $("aspect").onchange=()=>{if($("aspect").checked&&$("outW").value)$("outH").valu
 $("quality").onchange=renderExports;$("reconstruct").onchange=renderExports;
 
 fileInput.addEventListener("change", e=>{
-  const f=e.target.files && e.target.files[0];
-  if(f){ setStatus(`Selected ${f.name} — preparing image…`); loadImage(f); }
+  const f=e.currentTarget?.files?.[0];
+  if(!f){ setStatus("No image selected."); return; }
+  if(!f.type.startsWith("image/")){ setStatus("Please choose an image file."); return; }
+  setStatus(`Selected ${f.name} — preparing image…`);
+  loadImage(f);
 });
 ["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("drag")}));
 ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("drag")}));
