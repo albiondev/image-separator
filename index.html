@@ -112,7 +112,62 @@ input[type=range]{width:100%}.tiny{font-size:11px;color:var(--muted)}.note{font-
 </aside>
 </main>
 
-<script type="module">
+
+<script>
+(function(){
+  const input=document.getElementById("file");
+  const status=document.getElementById("status");
+  const canvas=document.getElementById("canvas");
+  const empty=document.getElementById("empty");
+
+  window.__selectedImageFile = null;
+  window.__selectedImageURL = null;
+
+  function say(t){ if(status) status.textContent=t; }
+
+  async function handleFile(){
+    const file=input && input.files && input.files[0];
+    if(!file){ say("No image selected."); return; }
+    window.__selectedImageFile=file;
+
+    if(window.__selectedImageURL) URL.revokeObjectURL(window.__selectedImageURL);
+    window.__selectedImageURL=URL.createObjectURL(file);
+
+    say("Image selected: "+file.name+" — loading preview…");
+
+    const img=new Image();
+    img.onload=function(){
+      // The upload path is proven before the AI application is started.
+      if(canvas){
+        const max=1800;
+        const scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+        canvas.width=Math.round(img.naturalWidth*scale);
+        canvas.height=Math.round(img.naturalHeight*scale);
+        const c=canvas.getContext("2d");
+        c.clearRect(0,0,canvas.width,canvas.height);
+        c.drawImage(img,0,0,canvas.width,canvas.height);
+        canvas.hidden=false;
+      }
+      if(empty) empty.style.display="none";
+      say("Image loaded: "+file.name+" — starting local AI…");
+      if(typeof window.startLayerAnalysis==="function"){
+        window.startLayerAnalysis(file);
+      }else{
+        say("Image loaded successfully. Preparing the AI engine…");
+      }
+    };
+    img.onerror=function(){ say("The image was selected, but Safari could not decode it."); };
+    img.src=window.__selectedImageURL;
+  }
+
+  input.addEventListener("change",handleFile);
+  const btn=document.getElementById("useSelected");
+  if(btn) btn.addEventListener("click",handleFile);
+  window.__handleImageFile=handleFile;
+})();
+</script>
+
+<script>
 let pipeline, RawImage;
 
 const $ = id => document.getElementById(id);
@@ -242,7 +297,8 @@ async function analyse(){
       pipe=await pipeline("image-segmentation","onnx-community/BiRefNet_lite-ONNX",{dtype:"fp32"});
     }
     progress.value=.25;setStatus("Running foreground segmentation locally…");
-    const modelInput=RawImage.fromCanvas(canvas);\n    const result=await pipe(modelInput);
+    const modelInput=RawImage.fromCanvas(canvas);
+    const result=await pipe(modelInput);
     let maskImg=result?.[0]?.mask || result?.[0]?.image || result?.mask || result;
     if(!maskImg) throw new Error("The segmentation model returned no mask.");
     let maskRaw;
@@ -338,8 +394,7 @@ $("outH").oninput=()=>{if($("scale").value!=="custom")$("scale").value="custom";
 $("aspect").onchange=()=>{if($("aspect").checked&&$("outW").value)$("outH").value=Math.round(Number($("outW").value)*H/W);renderExports()};
 $("quality").onchange=renderExports;$("reconstruct").onchange=renderExports;
 
-async function useSelectedImage(){
-  const file=fileInput.files && fileInput.files[0];
+window.startLayerAnalysis=async function(file){
   if(!file){ setStatus("No image selected yet. Tap the file picker above first."); return; }
   setStatus("File received: "+file.name+" — preparing image…");
   try{
@@ -356,8 +411,7 @@ async function useSelectedImage(){
   }
 }
 
-fileInput.addEventListener("change", useSelectedImage);
-$("useSelected").addEventListener("click", useSelectedImage);
+
 
 ["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("drag")}));
 ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("drag")}));
