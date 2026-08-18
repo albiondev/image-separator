@@ -1,17 +1,25 @@
-# Local Image Layer Separator — V8
+# Local Image Layer Separator — V9
 
 GitHub Pages-ready browser prototype.
 
-## iPhone / Safari upload
+## Important iPhone/Safari fix
 
-V8 adds an explicit **Use selected image** button. After choosing an image with Safari's native file picker, tap that button. The application reads `input.files[0]` directly and starts the existing image-analysis pipeline.
+The previous versions imported Transformers.js at page startup. If Safari failed to load that ES module, the entire application script stopped before the file-picker handlers were installed. That explains why the native picker could work in the diagnostic page but the full app remained stuck on “Waiting for image”.
 
-This provides a reliable fallback if iOS Safari does not fire the `change` event in the deployed page.
+V9 changes the architecture:
+
+1. The page starts with no AI dependency import.
+2. The native file input is available immediately.
+3. Selecting the file reaches the application.
+4. Only then does the page dynamically import Transformers.js.
+5. Any model/library loading error is shown in the status box.
+
+This isolates upload from AI startup.
 
 ## Deploy
 
-Replace `index.html` in the GitHub repository and commit. Keep GitHub Pages on `main` → `/ (root)`.
+Replace the repository `index.html` with this file and commit. Keep GitHub Pages on `main` → `/ (root)`.
 
 ## Privacy
 
-Image pixels are processed in the browser and are not sent to an application server.
+Image pixels are processed in the browser. The application does not upload them to an application server.

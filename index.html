@@ -12,7 +12,7 @@ header{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-
 h1{font-size:18px;margin:0 0 3px}.sub{color:var(--muted);font-size:12px}.privacy{border:1px solid #31533e;background:#102017;color:#9de0b1;padding:7px 10px;border-radius:999px;font-size:12px}
 main{display:grid;grid-template-columns:300px minmax(400px,1fr) 300px;min-height:calc(100vh - 78px)}
 aside{padding:18px;border-right:1px solid var(--line);background:#10131a}.right{border-left:1px solid var(--line);border-right:0}
-align-items:center;justify-content:center;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:9px 12px;border-radius:9px;cursor:pointer}.ios-file-input{display:block;width:100%;margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text)}.drop{border:1px dashed #4a5365;border-radius:12px;padding:28px 15px;text-align:center;background:#121721}.drop.drag{border-color:var(--accent);background:#18172a}.drop strong{display:block;margin-bottom:5px}.drop small{color:var(--muted)}
+.ios-file-input{display:block;width:100%;margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text)}.drop{border:1px dashed #4a5365;border-radius:12px;padding:28px 15px;text-align:center;background:#121721}.drop.drag{border-color:var(--accent);background:#18172a}.drop strong{display:block;margin-bottom:5px}.drop small{color:var(--muted)}
 .section{margin-top:18px}.section h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 9px}
 .status{padding:10px;border-radius:9px;background:var(--panel);border:1px solid var(--line);color:#cdd3dc;font-size:12px;min-height:42px}
 .layer{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);background:var(--panel);border-radius:9px;margin:7px 0}.layer.active{border-color:var(--accent)}.layer input{accent-color:var(--accent)}.layer .name{flex:1}.badge{font-size:10px;color:var(--muted)}
@@ -46,7 +46,7 @@ input[type=range]{width:100%}.tiny{font-size:11px;color:var(--muted)}.note{font-
 
   <div class="section">
     <h2>Analysis</h2>
-    <div id="status" class="status">Waiting for an image.</div>
+    <div id="status" class="status">Ready — choose an image.</div>
     <div style="margin-top:8px"><progress id="progress" value="0" max="1" hidden></progress></div>
   </div>
 
@@ -113,7 +113,7 @@ input[type=range]{width:100%}.tiny{font-size:11px;color:var(--muted)}.note{font-
 </main>
 
 <script type="module">
-import { pipeline, RawImage } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0/+esm";
+let pipeline, RawImage;
 
 const $ = id => document.getElementById(id);
 const canvas=$("canvas"), ctx=canvas.getContext("2d",{willReadFrequently:true});
@@ -341,14 +341,21 @@ $("quality").onchange=renderExports;$("reconstruct").onchange=renderExports;
 async function useSelectedImage(){
   const file=fileInput.files && fileInput.files[0];
   if(!file){ setStatus("No image selected yet. Tap the file picker above first."); return; }
-  setStatus("Selected: "+file.name+" — preparing image…");
+  setStatus("File received: "+file.name+" — preparing image…");
   try{
+    if(!pipeline){
+      setStatus("Image received. Loading the browser AI engine…");
+      const mod=await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0/+esm");
+      pipeline=mod.pipeline;
+      RawImage=mod.RawImage;
+    }
     await loadImage(file);
   }catch(err){
     console.error(err);
-    setStatus("Could not read image: "+(err?.message||err));
+    setStatus("Could not start image processing: "+(err?.message||err));
   }
 }
+
 fileInput.addEventListener("change", useSelectedImage);
 $("useSelected").addEventListener("click", useSelectedImage);
 

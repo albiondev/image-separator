@@ -1,1 +1,1 @@
-Prototype package. Third-party libraries and models retain their own licences. Review them before redistribution.
+Prototype package. Third-party libraries and models retain their own licences.
