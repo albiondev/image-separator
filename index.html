@@ -106,7 +106,7 @@ input[type=range]{width:100%}.tiny{font-size:11px;color:var(--muted)}.note{font-
   </div>
   <div class="section"><h2>Model note</h2>
     <div class="tiny">
-      This prototype uses Transformers.js + BRIA RMBG-1.4 for foreground segmentation and Tesseract.js for local OCR. RMBG-1.4 is source-available and its current model card specifies non-commercial use; check its licence before distributing a commercial version.
+      This prototype uses Transformers.js + BiRefNet for foreground segmentation and Tesseract.js for local OCR. RMBG-1.4 is source-available and its current model card specifies non-commercial use; check its licence before distributing a commercial version.
     </div>
   </div>
 </aside>
@@ -239,11 +239,12 @@ async function analyse(){
   try{
     if(!pipe){
       setStatus("Loading local segmentation model (first run can be large)…");
-      pipe=await pipeline("image-segmentation","briaai/RMBG-1.4",{device:navigator.gpu?"webgpu":"wasm"});
+      pipe=await pipeline("image-segmentation","onnx-community/BiRefNet_lite-ONNX",{dtype:navigator.gpu?"fp16":"q8"});
     }
     progress.value=.25;setStatus("Running foreground segmentation locally…");
     const result=await pipe(sourceImage);
-    let maskImg=result?.[0]?.mask || result?.[0];
+    let maskImg=result?.[0]?.mask || result?.[0]?.image || result?.[0];
+    if(!maskImg) throw new Error("The segmentation model returned no mask.");
     const mc=document.createElement("canvas");mc.width=W;mc.height=H;
     const mctx=mc.getContext("2d",{willReadFrequently:true});mctx.drawImage(maskImg,0,0,W,H);
     const md=mctx.getImageData(0,0,W,H).data;let fg=new Uint8ClampedArray(W*H);
