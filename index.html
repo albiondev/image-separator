@@ -134,7 +134,7 @@ input[type=range]{width:100%}.tiny{font-size:11px;color:var(--muted)}.note{font-
   window.__selectedImageURL = null;
 
   function say(t){ if(status) status.textContent=t; }
-  function stage(t){ const el=document.getElementById("stage"); if(el) el.textContent="Stage: "+t; }
+  function setStage(t){ const el=document.getElementById("stage"); if(el) el.textContent="Stage: "+t; }
 
   async function handleFile(){
     const file=input && input.files && input.files[0];
@@ -144,7 +144,7 @@ input[type=range]{width:100%}.tiny{font-size:11px;color:var(--muted)}.note{font-
     if(window.__selectedImageURL) URL.revokeObjectURL(window.__selectedImageURL);
     window.__selectedImageURL=URL.createObjectURL(file);
 
-    stage("file selected"); say("Image selected: "+file.name+" — loading preview…");
+    setStage("file selected"); say("Image selected: "+file.name+" — loading preview…");
 
     const img=new Image();
     img.onload=function(){
@@ -160,7 +160,7 @@ input[type=range]{width:100%}.tiny{font-size:11px;color:var(--muted)}.note{font-
         canvas.hidden=false;
       }
       if(empty) empty.style.display="none";
-      stage("image decoded"); say("Image loaded: "+file.name+" — starting local AI…");
+      setStage("image decoded"); say("Image loaded: "+file.name+" — starting local AI…");
       if(typeof window.startLayerAnalysis==="function"){
         window.startLayerAnalysis(file);
       }else{
@@ -309,7 +309,7 @@ async function analyse(){
   $("reanalyze").disabled=true;$("reset").disabled=true;
   try{
     if(!pipe){
-      stage("loading segmentation model"); setStatus("Loading local segmentation model (first run can be large)…");
+      setStage("loading segmentation model"); setStatus("Loading local segmentation model (first run can be large)…");
       pipe=await pipeline("image-segmentation","onnx-community/BiRefNet_lite-ONNX",{dtype:"fp32"});
     }
     progress.value=.25;setStatus("Running foreground segmentation locally…");
@@ -415,7 +415,7 @@ window.startLayerAnalysis=async function(file){
   setStatus("File received: "+file.name+" — preparing image…");
   try{
     if(!pipeline){
-      stage("loading AI engine"); setStatus("Image received. Loading the browser AI engine…");
+      setStage("loading AI engine"); setStatus("Image received. Loading the browser AI engine…");
       const mod=await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0/+esm");
       pipeline=mod.pipeline;
       RawImage=mod.RawImage;
