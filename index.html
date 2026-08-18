@@ -2,359 +2,55 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Local Image Layer Separator</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Image Upload Test</title>
 <style>
-:root{--bg:#0b0d12;--panel:#141821;--panel2:#1b202b;--line:#2b3240;--text:#f3f5f7;--muted:#9aa4b2;--accent:#8b7cff}
-*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-button,input{font:inherit} button{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:9px 12px;border-radius:9px;cursor:pointer}button:hover{border-color:#596275}button:disabled{opacity:.45;cursor:not-allowed}
-header{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:20px}
-h1{font-size:18px;margin:0 0 3px}.sub{color:var(--muted);font-size:12px}.privacy{border:1px solid #31533e;background:#102017;color:#9de0b1;padding:7px 10px;border-radius:999px;font-size:12px}
-main{display:grid;grid-template-columns:300px minmax(400px,1fr) 300px;min-height:calc(100vh - 78px)}
-aside{padding:18px;border-right:1px solid var(--line);background:#10131a}.right{border-left:1px solid var(--line);border-right:0}
-.file-picker{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:9px 12px;border-radius:9px;cursor:pointer}.ios-file-input{display:block;width:100%;margin-top:12px;padding:9px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text)}.drop{border:1px dashed #4a5365;border-radius:12px;padding:28px 15px;text-align:center;background:#121721}.drop.drag{border-color:var(--accent);background:#18172a}.drop strong{display:block;margin-bottom:5px}.drop small{color:var(--muted)}
-.section{margin-top:18px}.section h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 9px}
-.status{padding:10px;border-radius:9px;background:var(--panel);border:1px solid var(--line);color:#cdd3dc;font-size:12px;min-height:42px}
-.layer{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);background:var(--panel);border-radius:9px;margin:7px 0}.layer.active{border-color:var(--accent)}.layer input{accent-color:var(--accent)}.layer .name{flex:1}.badge{font-size:10px;color:var(--muted)}
-.controls{display:grid;grid-template-columns:1fr 1fr;gap:7px}.controls button:first-child{grid-column:1/-1}
-.stage{position:relative;display:flex;align-items:center;justify-content:center;padding:24px;overflow:hidden;background:
-linear-gradient(45deg,#11151d 25%,transparent 25%) 0 0/20px 20px,
-linear-gradient(-45deg,#11151d 25%,transparent 25%) 0 0/20px 20px,
-linear-gradient(45deg,transparent 75%,#11151d 75%) 0 0/20px 20px,
-linear-gradient(-45deg,transparent 75%,#11151d 75%) 0 0/20px 20px,#0d1016}
-canvas{max-width:100%;max-height:calc(100vh - 155px);width:auto;height:auto;box-shadow:0 12px 40px #0008}
-.empty{position:absolute;text-align:center;color:var(--muted);max-width:480px}.empty h2{color:var(--text);font-size:20px;margin:0 0 8px}.empty p{margin:0 0 14px}
-progress{width:100%;height:8px}label{display:block;color:var(--muted);font-size:12px;margin:9px 0 4px}
-input[type=range]{width:100%}.tiny{font-size:11px;color:var(--muted)}.note{font-size:11px;color:var(--muted);margin-top:12px}.output-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.output-grid input,.output-grid select{width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px}.check{display:flex;gap:7px;align-items:center;color:var(--muted);font-size:12px;margin-top:8px}
-@media(max-width:1000px){main{grid-template-columns:1fr}.right,aside{border:0;border-bottom:1px solid var(--line)}.stage{min-height:55vh}}
+body{margin:0;padding:24px;background:#10131a;color:#f4f5f7;font:16px system-ui,sans-serif}
+.card{max-width:680px;margin:auto;background:#181d27;border:1px solid #303746;border-radius:16px;padding:22px}
+h1{font-size:22px;margin-top:0}p{color:#aab2bf}
+input[type=file]{display:block;width:100%;padding:14px;margin:18px 0;background:#222936;color:#fff;border:1px solid #485266;border-radius:10px;font-size:16px}
+#status{padding:12px;border-radius:10px;background:#0d1016;margin:12px 0;word-break:break-word}
+#preview{display:block;max-width:100%;max-height:60vh;margin-top:16px;border-radius:8px}
+.hidden{display:none}
 </style>
 </head>
 <body>
-<header>
-  <div><h1>Local Image Layer Separator</h1><div class="sub">AI-assisted decomposition — processing stays in your browser</div></div>
-  <div class="privacy">🔒 No image upload</div>
-</header>
+<div class="card">
+<h1>Image Upload Test</h1>
+<p>This is a deliberately tiny Safari/iPhone test. It does not use AI, Canvas, external libraries or a server.</p>
+<input id="file" type="file" accept="image/*">
+<div id="status">Waiting for image…</div>
+<img id="preview" class="hidden" alt="Selected image preview">
+</div>
+<script>
+(function(){
+  const input=document.getElementById("file");
+  const status=document.getElementById("status");
+  const preview=document.getElementById("preview");
 
-<main>
-<aside>
-  <div id="drop" class="drop">
-    <strong>Choose an image</strong>
-    <small>Safari/iPhone: use the native picker below</small>
-    <input id="file" type="file" accept="image/*" class="ios-file-input">
-  </div>
+  function say(text){status.textContent=text;}
 
-  <div class="section">
-    <h2>Analysis</h2>
-    <div id="status" class="status">Waiting for an image.</div>
-    <div style="margin-top:8px"><progress id="progress" value="0" max="1" hidden></progress></div>
-  </div>
+  input.addEventListener("change", function(){
+    say("CHANGE EVENT FIRED");
+    const file=input.files && input.files[0];
+    if(!file){say("The picker closed without a file.");return;}
+    say("File received: "+file.name+" ("+file.type+", "+file.size+" bytes)");
 
-  <div class="section">
-    <h2>Layers</h2>
-    <div id="layers"></div>
-  </div>
-
-  <div class="section">
-    <h2>Refinement</h2>
-    <label>Edge softness <span id="softVal">2</span> px</label>
-    <input id="soft" type="range" min="0" max="12" value="2">
-    <label>Text mask expansion <span id="expandVal">5</span> px</label>
-    <input id="expand" type="range" min="0" max="24" value="5">
-    <div class="controls" style="margin-top:10px">
-      <button id="reanalyze" disabled>Re-analyse</button>
-      <button id="reset" disabled>Reset</button>
-    </div>
-  </div>
-
-  <div class="note">
-    The first AI analysis downloads the selected model/runtime into the browser cache. Your image is passed only to the local browser-side model.
-  </div>
-</aside>
-
-<section class="stage">
-  <div id="empty" class="empty">
-    <h2>Separate a flattened graphic into editable layers</h2>
-    <p>Typography, text background, foreground/decorative artwork and the whole-image background are estimated locally.</p>
-    
-  </div>
-  <canvas id="canvas" hidden></canvas>
-</section>
-
-<aside class="right">
-  <div class="section" style="margin-top:0"><h2>Output resolution</h2>
-    <div class="output-grid">
-      <div><label>Scale</label><select id="scale"><option value="1">1× Original</option><option value="2" selected>2× Upscale</option><option value="4">4× Upscale</option><option value="custom">Custom</option></select></div>
-      <div><label>Width (px)</label><input id="outW" type="number" min="1" step="1" placeholder="Original"></div>
-      <div><label>Height (px)</label><input id="outH" type="number" min="1" step="1" placeholder="Original"></div>
-      <div><label>Edge quality</label><select id="quality"><option value="balanced">Balanced</option><option value="maximum" selected>Maximum</option><option value="fast">Fast</option></select></div>
-    </div>
-    <label class="check"><input id="aspect" type="checkbox" checked> Maintain aspect ratio</label>
-    <label class="check"><input id="reconstruct" type="checkbox" checked> High-resolution edge reconstruction</label>
-    <div class="tiny" style="margin-top:7px">Layers are rendered at the requested output size instead of simply enlarging a finished cut-out.</div>
-  </div>
-  <div class="section"><h2>Export</h2></div>
-  <div id="exportButtons"></div>
-  <div class="section"><h2>What this prototype does</h2>
-    <div class="tiny">
-      <p><b>Background:</b> AI foreground/background segmentation.</p>
-      <p><b>Typography:</b> OCR finds text regions, then a local pixel-mask heuristic extracts likely lettering.</p>
-      <p><b>Text background:</b> expanded OCR regions minus the lettering mask.</p>
-      <p><b>Decoration:</b> segmented foreground minus detected text regions.</p>
-      <p><b>Edges:</b> alpha masks are softly blurred to reduce jagged boundaries.</p>
-    </div>
-  </div>
-  <div class="section"><h2>Model note</h2>
-    <div class="tiny">
-      This prototype uses Transformers.js + BiRefNet for foreground segmentation and Tesseract.js for local OCR. RMBG-1.4 is source-available and its current model card specifies non-commercial use; check its licence before distributing a commercial version.
-    </div>
-  </div>
-</aside>
-</main>
-
-<script type="module">
-import { pipeline, RawImage } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0/+esm";
-
-const $ = id => document.getElementById(id);
-const canvas=$("canvas"), ctx=canvas.getContext("2d",{willReadFrequently:true});
-const fileInput=$("file"), drop=$("drop"), status=$("status"), progress=$("progress");
-let source=null, sourceImage=null, W=0,H=0, layers={}, ocrWords=[], pipe=null;
-
-const layerDefs=[
-  ["background","Whole image background"],
-  ["textBg","Text background"],
-  ["text","Typography"],
-  ["decor","Image / decoration"],
-  ["foreground","AI foreground"]
-];
-
-function setStatus(t){status.textContent=t}
-function clamp(v,a=0,b=255){return Math.max(a,Math.min(b,v))}
-function rgbaMaskToCanvas(mask, rgbaSource, mode="mask", softness=0){
-  const out=document.createElement("canvas"); out.width=W; out.height=H;
-  const c=out.getContext("2d");
-  const id=c.createImageData(W,H), d=id.data;
-  for(let i=0;i<W*H;i++){
-    const a=mask[i];
-    if(mode==="source"){
-      const p=i*4, q=i*4;
-      d[p]=rgbaSource[q]; d[p+1]=rgbaSource[q+1]; d[p+2]=rgbaSource[q+2]; d[p+3]=a;
-    }else{const p=i*4; d[p]=255;d[p+1]=255;d[p+2]=255;d[p+3]=a}
-  }
-  c.putImageData(id,0,0);
-  return out;
-}
-function blurMask(mask,r){
-  if(r<=0)return mask;
-  const c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
-  const im=new ImageData(W,H); for(let i=0;i<mask.length;i++){const p=i*4;im.data[p]=im.data[p+1]=im.data[p+2]=mask[i];im.data[p+3]=255}
-  x.putImageData(im,0,0); x.filter=`blur(${r}px)`; x.drawImage(c,0,0);
-  const z=x.getImageData(0,0,W,H).data, o=new Uint8ClampedArray(W*H);for(let i=0;i<o.length;i++)o[i]=z[i*4];return o;
-}
-function makeLayerCanvas(mask){
-  const id=ctx.getImageData(0,0,W,H).data;
-  return rgbaMaskToCanvas(mask,id,"source",0);
-}
-function canvasToPNG(c){return new Promise(r=>c.toBlob(r,"image/png"))}
-function downloadBlob(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-
-function renderLayers(){
-  const wrap=$("layers");wrap.innerHTML="";
-  for(const [id,name] of layerDefs){
-    if(!layers[id])continue;
-    const row=document.createElement("div");row.className="layer";
-    const cb=document.createElement("input");cb.type="checkbox";cb.checked=true;cb.dataset.id=id;
-    cb.onchange=renderComposite;
-    const n=document.createElement("span");n.className="name";n.textContent=name;
-    const b=document.createElement("span");b.className="badge";b.textContent=id==="foreground"?"AI":"PNG";
-    row.append(cb,n,b);wrap.append(row);
-  }
-}
-function renderComposite(){
-  if(!sourceImage)return;
-  ctx.clearRect(0,0,W,H);
-  for(const [id] of layerDefs){
-    const cb=document.querySelector(`input[data-id="${id}"]`);
-    if(cb?.checked && layers[id])ctx.drawImage(layers[id],0,0);
-  }
-}
-function getOutputSize(){
-  const scale=$("scale").value;
-  if(scale!=="custom") return {w:Math.max(1,Math.round(W*Number(scale))),h:Math.max(1,Math.round(H*Number(scale)))};
-  let w=parseInt($("outW").value)||W, h=parseInt($("outH").value)||H;
-  if($("aspect").checked){
-    if(document.activeElement===$("outH") && !$("outW").value) w=Math.round(h*W/H);
-    else h=Math.round(w*H/W);
-  }
-  return {w,h};
-}
-function prepareOutputLayer(src){
-  const {w,h}=getOutputSize(), out=document.createElement("canvas");
-  out.width=w;out.height=h;
-  const c=out.getContext("2d");
-  c.imageSmoothingEnabled=true;
-  c.imageSmoothingQuality=$("quality").value==="maximum"?"high":$("quality").value==="fast"?"low":"medium";
-  c.drawImage(src,0,0,w,h);
-  return out;
-}
-function renderExports(){
-  const wrap=$("exportButtons");wrap.innerHTML="";
-  for(const [id,name] of layerDefs){
-    if(!layers[id])continue;
-    const b=document.createElement("button");b.style.width="100%";b.style.marginBottom="7px";b.textContent="Export "+name;
-    b.onclick=async()=>downloadBlob(await canvasToPNG(prepareOutputLayer(layers[id])),`${id}-${getOutputSize().w}x${getOutputSize().h}.png`);
-    wrap.append(b);
-  }
-  const all=document.createElement("button");all.style.width="100%";all.textContent=`Export current composite (${getOutputSize().w}×${getOutputSize().h})`;
-  all.onclick=async()=>{
-    const {w,h}=getOutputSize(), out=document.createElement("canvas");out.width=w;out.height=h;
-    const c=out.getContext("2d");c.imageSmoothingEnabled=true;c.imageSmoothingQuality="high";
-    for(const [id] of layerDefs){
-      const cb=document.querySelector(`input[data-id="${id}"]`);
-      if(cb?.checked && layers[id])c.drawImage(prepareOutputLayer(layers[id]),0,0,w,h);
-    }
-    downloadBlob(await canvasToPNG(out),`separated-composite-${w}x${h}.png`);
-  };wrap.append(all);
-}
-function sourceData(){
-  ctx.clearRect(0,0,W,H);ctx.drawImage(sourceImage,0,0,W,H);return ctx.getImageData(0,0,W,H).data;
-}
-
-async function loadImage(file){
-  if(!file)return;
-  const url=URL.createObjectURL(file);
-  sourceImage=new Image();sourceImage.decoding="async";sourceImage.onload=async()=>{
-    const max=1800, scale=Math.min(1,max/Math.max(sourceImage.naturalWidth,sourceImage.naturalHeight));
-    W=Math.round(sourceImage.naturalWidth*scale);H=Math.round(sourceImage.naturalHeight*scale);
-    canvas.width=W;canvas.height=H;canvas.hidden=false;$("empty").style.display="none";
-    source=sourceImage; layers={}; ocrWords=[];
-    await analyse();
-    URL.revokeObjectURL(url);
-  };sourceImage.src=url;
-}
-
-async function analyse(){
-  setStatus("Preparing local AI…");progress.hidden=false;progress.value=.05;
-  $("reanalyze").disabled=true;$("reset").disabled=true;
-  try{
-    if(!pipe){
-      setStatus("Loading local segmentation model (first run can be large)…");
-      pipe=await pipeline("image-segmentation","onnx-community/BiRefNet_lite-ONNX",{dtype:"fp32"});
-    }
-    progress.value=.25;setStatus("Running foreground segmentation locally…");
-    const modelInput=RawImage.fromCanvas(canvas);\n    const result=await pipe(modelInput);
-    let maskImg=result?.[0]?.mask || result?.[0]?.image || result?.mask || result;
-    if(!maskImg) throw new Error("The segmentation model returned no mask.");
-    let maskRaw;
-    if(maskImg?.data && typeof maskImg.width==="number") {
-      maskRaw=maskImg;
-    } else {
-      maskRaw=await RawImage.read(maskImg);
-    }
-    const maskResized=await maskRaw.resize(W,H);
-    const channels=maskResized.channels || 1;
-    const md=maskResized.data;
-    let fg=new Uint8ClampedArray(W*H);
-    for(let i=0;i<fg.length;i++){
-      const v=md[i*channels] ?? 0;
-      fg[i]=v;
-    }
-    fg=blurMask(fg,Number($("soft").value));
-    const sd=sourceData();
-    progress.value=.55;setStatus("Detecting typography locally…");
-    await loadOCR();
-    const textMask=buildTextMask(sd,ocrWords,Number($("expand").value));
-    progress.value=.75;setStatus("Building transparent layers…");
-    const textBgMask=new Uint8ClampedArray(W*H),decorMask=new Uint8ClampedArray(W*H),bgMask=new Uint8ClampedArray(W*H);
-    for(let i=0;i<fg.length;i++){
-      const t=textMask[i];
-      textBgMask[i]=t?0:0; // filled below from OCR region mask
-      decorMask[i]=t?0:fg[i];
-      bgMask[i]=255-fg[i];
-    }
-    // OCR region mask, separate from the lettering mask.
-    const regionMask=buildRegionMask(ocrWords,Number($("expand").value));
-    for(let i=0;i<fg.length;i++) textBgMask[i]=regionMask[i] && !textMask[i] ? Math.min(fg[i],regionMask[i]) : 0;
-    layers.background=rgbaMaskToCanvas(bgMask,sd,"source");
-    layers.text=rgbaMaskToCanvas(textMask,sd,"source");
-    layers.textBg=rgbaMaskToCanvas(textBgMask,sd,"source");
-    layers.decor=rgbaMaskToCanvas(decorMask,sd,"source");
-    layers.foreground=rgbaMaskToCanvas(fg,sd,"source");
-    renderLayers();renderExports();renderComposite();
-    progress.value=1;setStatus(`Done. Found ${ocrWords.length} text region${ocrWords.length===1?"":"s"}. Everything was processed in-browser.`);
-    $("reanalyze").disabled=false;$("reset").disabled=false;
-  }catch(e){
-    console.error(e);setStatus("Analysis failed: "+(e?.message||e));
-    progress.value=0;$("reanalyze").disabled=false;
-  }
-}
-
-async function loadOCR(){
-  if(window.Tesseract){}else{
-    await new Promise((resolve,reject)=>{
-      const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
-      s.onload=resolve;s.onerror=()=>reject(new Error("Could not load Tesseract.js"));document.head.append(s);
-    });
-  }
-  const worker=await Tesseract.createWorker("eng");
-  const ret=await worker.recognize(sourceImage);
-  ocrWords=(ret.data.words||[]).filter(w=>w.text?.trim() && w.confidence>35).map(w=>({
-    x0:w.bbox.x0*W/sourceImage.naturalWidth,y0:w.bbox.y0*H/sourceImage.naturalHeight,
-    x1:w.bbox.x1*W/sourceImage.naturalWidth,y1:w.bbox.y1*H/sourceImage.naturalHeight
-  }));
-  await worker.terminate();
-}
-function buildRegionMask(words,expand){
-  const m=new Uint8ClampedArray(W*H);
-  for(const w of words){
-    const x0=Math.max(0,Math.floor(w.x0-expand)),x1=Math.min(W-1,Math.ceil(w.x1+expand));
-    const y0=Math.max(0,Math.floor(w.y0-expand)),y1=Math.min(H-1,Math.ceil(w.y1+expand));
-    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)m[y*W+x]=255;
-  }return m;
-}
-function buildTextMask(sd,words,expand){
-  const region=buildRegionMask(words,expand),m=new Uint8ClampedArray(W*H);
-  // Estimate local background colour from a narrow border around each OCR word.
-  for(const w of words){
-    const x0=Math.max(0,Math.floor(w.x0)),x1=Math.min(W-1,Math.ceil(w.x1));
-    const y0=Math.max(0,Math.floor(w.y0)),y1=Math.min(H-1,Math.ceil(w.y1));
-    let rs=0,gs=0,bs=0,n=0;
-    const sample=(x,y)=>{const p=(y*W+x)*4;rs+=sd[p];gs+=sd[p+1];bs+=sd[p+2];n++};
-    for(let x=x0;x<=x1;x++){if(y0>0)sample(x,y0-1);if(y1<H-1)sample(x,y1+1)}
-    for(let y=y0;y<=y1;y++){if(x0>0)sample(x0-1,y);if(x1<W-1)sample(x1+1,y)}
-    if(!n)continue;rs/=n;gs/=n;bs/=n;
-    const thresh=30;
-    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
-      const p=(y*W+x)*4, d=Math.hypot(sd[p]-rs,sd[p+1]-gs,sd[p+2]-bs);
-      if(d>thresh)m[y*W+x]=Math.max(m[y*W+x],clamp(Math.round((d-thresh)*8)));
-    }
-  }
-  return blurMask(m,Number($("soft").value));
-}
-
-$("scale").onchange=()=>{if($("scale").value!=="custom"){$("outW").value="";$("outH").value=""}renderExports()};
-$("outW").oninput=()=>{if($("scale").value!=="custom")$("scale").value="custom";renderExports()};
-$("outH").oninput=()=>{if($("scale").value!=="custom")$("scale").value="custom";renderExports()};
-$("aspect").onchange=()=>{if($("aspect").checked&&$("outW").value)$("outH").value=Math.round(Number($("outW").value)*H/W);renderExports()};
-$("quality").onchange=renderExports;$("reconstruct").onchange=renderExports;
-
-fileInput.addEventListener("change", e=>{
-  const f=e.target.files && e.target.files[0];
-  if(f){ setStatus(`Selected ${f.name} — preparing image…`); loadImage(f); }
-});
-fileInput.addEventListener("change", function(e){
-  const input=e.currentTarget;
-  const f=input.files && input.files.length ? input.files[0] : null;
-  if(!f){ setStatus("No image selected."); return; }
-  setStatus("Selected " + f.name + " — preparing image…");
-  loadImage(f).catch(err=>{console.error(err);setStatus("Could not read image: "+(err.message||err));});
-});
-["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("drag")}));
-["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("drag")}));
-drop.addEventListener("drop",e=>loadImage(e.dataTransfer.files[0]));
-$("soft").oninput=e=>{$("softVal").textContent=e.target.value};
-$("expand").oninput=e=>{$("expandVal").textContent=e.target.value};
-$("reanalyze").onclick=analyse;
-$("reset").onclick=()=>{layers={};ocrWords=[];renderLayers();renderExports();ctx.clearRect(0,0,W,H);setStatus("Reset. Choose an image to begin.");$("reset").disabled=true};
+    const reader=new FileReader();
+    reader.onload=function(){
+      preview.onload=function(){
+        preview.classList.remove("hidden");
+        say("SUCCESS — Safari passed the image to the page. "+file.name);
+      };
+      preview.onerror=function(){
+        say("File received, but Safari could not decode this image.");
+      };
+      preview.src=reader.result;
+    };
+    reader.onerror=function(){say("FileReader error: "+reader.error);};
+    reader.readAsDataURL(file);
+  });
+})();
 </script>
 </body>
 </html>
