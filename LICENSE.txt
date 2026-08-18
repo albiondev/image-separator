@@ -1,0 +1,1 @@
+This repository packages the prototype application. Third-party libraries and models are subject to their own licences; see the README and their respective licence/model-card pages before redistribution.
