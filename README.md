@@ -1,23 +1,15 @@
-# Local Image Layer Separator — V12
+# Local Image Layer Separator — Final Pre-flight Build
 
-V12 fixes the JavaScript startup error reported by Safari.
+This package has been pre-flight checked before release:
+- each JavaScript block syntax-checked independently
+- exactly one native file input
+- all referenced DOM IDs exist
+- Safari-sensitive analysis-function assignment explicitly terminated
+- AI library import delayed until after image selection
+- BiRefNet Lite model referenced
+- no obvious application-side image upload endpoint
+- processing-stage indicator included
 
-## Root cause
+Replace `index.html` in the GitHub Pages repository and commit the change. Keep Pages on `main` → `/ (root)`.
 
-The previous version assigned:
-
-`window.startLayerAnalysis = async function(file) { ... }`
-
-and immediately followed it with an array expression. Because the assignment did not have a terminating semicolon, Safari parsed the array as a property access on the function expression, producing:
-
-`undefined is not an object (evaluating 'async function(file){...} ["dragover"...')`
-
-V12 explicitly terminates that assignment.
-
-## Deploy
-
-Replace `index.html` in the GitHub repository and commit the change. Keep GitHub Pages on `main` → `/ (root)`.
-
-## Privacy
-
-Images are processed in the browser; they are not uploaded to an application server.
+Images are processed in the browser. External library/model assets are downloaded from their CDNs/model hosting.
